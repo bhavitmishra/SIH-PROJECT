@@ -42,7 +42,7 @@ export default function Card() {
   async function submitHandler(provider: string) {
     console.log(provider);
     setWarning(false);
-    signIn(provider, { callbackUrl: "/admin" });
+    signIn(provider, { callbackUrl: "/admin/dashboard" });
   }
 
   return (
