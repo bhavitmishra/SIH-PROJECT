@@ -15,8 +15,8 @@ export default function AdminDashboard() {
     try {
       await axios.post("/api/mailsender/", {
         email,
-        // @ts-ignore
-        adminId: session?.user?.adminId,
+
+        adminId: session?.user?.adminId || "",
       });
       alert("Mentor added and email sent!");
       setEmail(""); // clear input
