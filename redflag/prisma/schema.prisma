@@ -1,0 +1,60 @@
+// schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String?  // optional if using OAuth
+  mentors   Mentor[] // 1:N relation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Mentor {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String?  // optional if using magic link
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  adminId   String
+  riskAudits RiskAudit[]
+  students  Student[] // optional: if assigning students
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id          String      @id @default(uuid())
+  name        String
+  studentId   String
+  email       String?
+  attendance  Float?
+  testScores  Json?       // {subject: score} or array of {subject, score, date}
+  feeStatus   Boolean?
+  riskFactor  Float?      // 0-100
+  mentor      Mentor?     @relation(fields: [mentorId], references: [id])
+  mentorId    String?
+  riskAudits  RiskAudit[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model RiskAudit {
+  id         String   @id @default(uuid())
+  student    Student  @relation(fields: [studentId], references: [id])
+  studentId  String
+  mentor     Mentor?  @relation(fields: [mentorId], references: [id])
+  mentorId   String?
+  riskLevel  String   // "Low", "Medium", "High"
+  reason     String
+  createdAt  DateTime @default(now())
+}
