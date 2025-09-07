@@ -85,7 +85,27 @@ app.post(
       // ✅ cleanup uploaded file to avoid filling /uploads
       fs.unlinkSync(filePath);
 
-      res.json({ message: "✅ All records successfully saved to DB!" });
+      // ✅ Forward to webhook after DB save
+      try {
+        const webhookRes = await fetch(
+          "http://localhost:3333/ietwebhook/attendance",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(records),
+          }
+        );
+
+        if (webhookRes.ok) {
+          console.log("✅ Webhook call successful!");
+        } else {
+          console.error("⚠️ Webhook call failed:", webhookRes.status);
+        }
+      } catch (err) {
+        console.error("🔥 Failed to hit webhook:", err);
+      }
+
+      res.json({ message: "✅ Records saved & webhook called" });
     } catch (error) {
       console.error("🔥 An error occurred:", error);
       res.status(500).json({ error: "Failed to process file" });
