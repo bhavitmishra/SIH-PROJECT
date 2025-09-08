@@ -2,15 +2,131 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import JSZip from "jszip";
 
 export default function MentorDashboard() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("home");
 
+  // explicit file slots
+  const [attendanceFile, setAttendanceFile] = useState<File | null>(null);
+  const [marksFile, setMarksFile] = useState<File | null>(null);
+  const [feesFile, setFeesFile] = useState<File | null>(null);
+
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "attendance" | "marks" | "fees"
+  ) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    if (type === "attendance") setAttendanceFile(file);
+    if (type === "marks") setMarksFile(file);
+    if (type === "fees") setFeesFile(file);
+    setMessage("");
+  };
+
+  const handleUpload = async () => {
+    if (!attendanceFile || !marksFile || !feesFile) {
+      setMessage("⚠️ Please select all three files before uploading.");
+      return;
+    }
+
+    setUploading(true);
+    setMessage("");
+
+    try {
+      const zip = new JSZip();
+      zip.file(attendanceFile.name, attendanceFile);
+      zip.file(marksFile.name, marksFile);
+      zip.file(feesFile.name, feesFile);
+
+      const blob = await zip.generateAsync({ type: "blob" });
+
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new File([blob], "student_data.zip", { type: "application/zip" })
+      );
+
+      const res = await fetch("http://localhost:3333/ietwebhook/attendance", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        setMessage("✅ Files uploaded successfully!");
+        setAttendanceFile(null);
+        setMarksFile(null);
+        setFeesFile(null);
+      } else {
+        setMessage("❌ Upload failed. Try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("⚠️ Something went wrong.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const DashboardHome = () => (
-    <div className="p-6">
-      Welcome, Mentor {session?.user?.name}
-      <h1 className="mt-2 text-gray-600">Your Email: {session?.user?.email}</h1>
+    <div className="p-6 space-y-4">
+      <div>
+        Welcome, Mentor {session?.user?.name}
+        <h1 className="mt-2 text-gray-600">
+          Your Email: {session?.user?.email}
+        </h1>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Attendance File
+          </label>
+          <input
+            type="file"
+            accept=".csv,.xlsx"
+            onChange={(e) => handleFileChange(e, "attendance")}
+          />
+          {attendanceFile && (
+            <p className="text-xs text-gray-600">{attendanceFile.name}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Marks File</label>
+          <input
+            type="file"
+            accept=".csv,.xlsx"
+            onChange={(e) => handleFileChange(e, "marks")}
+          />
+          {marksFile && (
+            <p className="text-xs text-gray-600">{marksFile.name}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Fees File</label>
+          <input
+            type="file"
+            accept=".csv,.xlsx"
+            onChange={(e) => handleFileChange(e, "fees")}
+          />
+          {feesFile && <p className="text-xs text-gray-600">{feesFile.name}</p>}
+        </div>
+
+        <button
+          onClick={handleUpload}
+          disabled={uploading}
+          className="px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 disabled:opacity-50"
+        >
+          {uploading ? "Uploading..." : "Upload All"}
+        </button>
+        {message && <p className="mt-2 text-sm">{message}</p>}
+      </div>
     </div>
   );
 
