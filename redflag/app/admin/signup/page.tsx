@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Key } from "lucide-react";
+import { Mail, Key, User } from "lucide-react";
+import axios from "axios"; // You'll need this to call your signup API
 
 // Using a standard SVG for the Google icon is the best practice
 const GoogleIcon = () => (
@@ -16,34 +17,45 @@ const GoogleIcon = () => (
     </svg>
 );
 
-export default function AdminSignInPage() {
+export default function AdminSignUpPage() {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // This function will handle calling your new signup API endpoint
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
         setError('');
         setIsLoading(true);
 
-        if (!email || !password) {
+        if (!name || !email || !password) {
             setError("Please fill in all fields.");
             setIsLoading(false);
             return;
         }
 
-        const result = await signIn('credentials', {
-            email,
-            password,
-            redirect: false,
-            callbackUrl: '/admin/dashboard',
-        });
+        try {
+            // This is where you would call your own API to create a new user
+            // For example: await axios.post('/api/auth/register', { name, email, password });
+            
+            // After successful signup, sign them in directly
+            const result = await signIn('credentials', {
+                email,
+                password,
+                redirect: false,
+                callbackUrl: '/admin/dashboard',
+            });
 
-        if (result?.error) {
-            setError("Invalid email or password. Please try again.");
-        } else if (result?.url) {
-            window.location.href = result.url;
+            if (result?.error) {
+                setError("Could not sign in after registration.");
+            } else if (result?.url) {
+                window.location.href = result.url;
+            }
+        } catch (apiError) {
+            // If your API returns an error (e.g., email already exists)
+            setError("Failed to create account. The email may already be in use.");
         }
 
         setIsLoading(false);
@@ -51,15 +63,18 @@ export default function AdminSignInPage() {
 
     return (
         <main className="flex justify-center items-center min-h-screen bg-gray-50">
-            {/* Removed mb-20 to allow for true vertical centering */}
             <Card className="w-full max-w-sm">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-                    <CardDescription>Sign in to access the Admin Dashboard.</CardDescription>
+                    <CardTitle className="text-2xl font-bold">Create an Admin Account</CardTitle>
+                    <CardDescription>Enter your details below to get started.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
                     <form onSubmit={handleSubmit} className="grid gap-4">
-                        {/* Each input is now wrapped in its own "box" */}
+                        {/* Each input is now wrapped in a 'relative' div */}
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <Input id="fullname" type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} required className="pl-10" />
+                        </div>
                         <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                             <Input id="email" type="email" placeholder="admin@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="pl-10" />
@@ -68,11 +83,11 @@ export default function AdminSignInPage() {
                             <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                             <Input id="password" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="pl-10" />
                         </div>
-                        
+
                         {error && <p className="text-sm text-red-600 text-center">{error}</p>}
                         
                         <Button type="submit" className="w-full" disabled={isLoading}>
-                            {isLoading ? "Signing In..." : "Sign In"}
+                            {isLoading ? "Creating Account..." : "Create Account"}
                         </Button>
                     </form>
 
@@ -87,9 +102,9 @@ export default function AdminSignInPage() {
                     </Button>
 
                     <div className="mt-4 text-center text-sm">
-                        Don&apos;t have an account?{" "}
-                        <Link href="/admin/signup" className="underline">
-                            Sign up
+                        Already have an account?{" "}
+                        <Link href="/admin/signin" className="underline">
+                            Sign In
                         </Link>
                     </div>
                 </CardContent>
@@ -97,4 +112,3 @@ export default function AdminSignInPage() {
         </main>
     );
 }
-
