@@ -119,3 +119,8 @@
   }
 }
 
+@layer utilities {
+  div[data-vc-toolbar] {
+    display: none !important;
+  }
+}

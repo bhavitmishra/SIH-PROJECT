@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/table"
 import DashboardHome from "@/components/mentorOverview";
 import { DataImport } from "@/components/dataManage";
-import AnimationWrapper from "@/components/ui/pageTransition"
+import AnimationWrapper from "@/components/ui/pageTransition";
+import { Scheduling } from "@/components/scheduling";
 
 
 const statusStyles: { [key: string]: string } = {
@@ -33,44 +34,44 @@ export default function MentorDashboard() {
   const [activeTab, setActiveTab] = useState("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-const Scheduling = () => {
-  return (
-    <div>
-      <div className="p-6 text-2xl font-bold">
-        Students Needing Attention
-      </div>
-      <div className="-mt-6 mx-6">These students are flagged for immediate review based on recent activity.</div>
-      {studentNeedingAttention.map((student, idx) => (
-        <Link href={`/mentor/students/${student.id}`} key={idx} className="no-underline">
-          <div className="p-4">
-            {/* This is the main Card component - it's the container */}
-            <Card className="w-full max-w-4xl">
-              {/* CardContent holds the main body of the card */}
-              <CardContent>
-                <div className="space-y-3">
-                  {/* --- Student 1 --- */}
-                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-4">
-                      {/* <Avatar>
-                        <AvatarImage src="https://github.com/shadcn.png" alt="Priya Sharma" />
-                        <AvatarFallback>PS</AvatarFallback>
-                      </Avatar> */}
-                      <div>
-                        <p className="font-semibold">{student.name}</p>
-                        <p className="text-sm text-gray-400">{student.email}</p>
-                      </div>
-                    </div>
-                    <Badge variant="destructive">{student.issue}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </Link>
-      ))}
-    </div>
-  );
-};
+// const Scheduling = () => {
+//   return (
+//     <div>
+//       <div className="p-6 text-2xl font-bold">
+//         Students Needing Attention
+//       </div>
+//       <div className="-mt-6 mx-6">These students are flagged for immediate review based on recent activity.</div>
+//       {studentNeedingAttention.map((student, idx) => (
+//         <Link href={`/mentor/students/${student.id}`} key={idx} className="no-underline">
+//           <div className="p-4">
+//             {/* This is the main Card component - it's the container */}
+//             <Card className="w-full max-w-4xl">
+//               {/* CardContent holds the main body of the card */}
+//               <CardContent>
+//                 <div className="space-y-3">
+//                   {/* --- Student 1 --- */}
+//                   <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+//                     <div className="flex items-center gap-4">
+//                       {/* <Avatar>
+//                         <AvatarImage src="https://github.com/shadcn.png" alt="Priya Sharma" />
+//                         <AvatarFallback>PS</AvatarFallback>
+//                       </Avatar> */}
+//                       <div>
+//                         <p className="font-semibold">{student.name}</p>
+//                         <p className="text-sm text-gray-400">{student.email}</p>
+//                       </div>
+//                     </div>
+//                     <Badge variant="destructive">{student.issue}</Badge>
+//                   </div>
+//                 </div>
+//               </CardContent>
+//             </Card>
+//           </div>
+//         </Link>
+//       ))}
+//     </div>
+//   );
+// };
 
   const MyStudents = () => {
 

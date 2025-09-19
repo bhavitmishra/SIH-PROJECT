@@ -5,6 +5,7 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { Users, Settings, Upload, BarChart3, Bell, Shield, Activity, TrendingUp, Mail, AlertCircle, UserPlus, Calendar, Filter, Send, Megaphone } from 'lucide-react';
 import { useRouter } from "next/navigation";
+import AnimationWrapper from "@/components/ui/pageTransition"
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
@@ -95,6 +96,7 @@ export default function AdminDashboard() {
   }
 
     return (
+
       <div className="flex h-screen bg-gray-100">
 
       {/* Sidebar */}
@@ -139,6 +141,7 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6">
 
+          <AnimationWrapper key={activeTab}>
         {/* system overview */}
 
         <div className={activeTab === "overview" ? 'block' : 'hidden'}>
@@ -411,6 +414,7 @@ export default function AdminDashboard() {
     </form>
   </div>
 </div>
+                </AnimationWrapper>
       </main>
 
       </div>
