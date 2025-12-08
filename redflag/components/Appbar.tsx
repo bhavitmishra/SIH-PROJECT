@@ -23,6 +23,7 @@ export const AppBar = () => {
   const adminMenuRef = useRef<HTMLDivElement>(null);
 
   const isLoggedIn = !!session;
+  
 
   // Effect to handle the dynamic background on scroll
   useEffect(() => {
