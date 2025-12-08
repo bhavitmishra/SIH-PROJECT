@@ -1,45 +1,42 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
-import multer from "multer";
-import AdmZip from "adm-zip";
-import path from "path";
-
+import axios from "axios"
+import { ok } from "assert";
 const app = express();
 app.use(cors());
+app.use(express.json()); // NOW the body is readable
 
-// ⚠️ don't use express.json() for file uploads, it conflicts with multipart/form-data
-// app.use(express.json());
+app.post("/dropzero_webhook", async(req, res) => {
+  const payload = req.body;
 
-// setup multer to dump files into /uploads
-const upload = multer({ dest: "uploads/" });
+  console.log("📩 Received payload from college server:");
+  console.log(payload);
 
-app.post(
-  "/ietwebhook/attendance",
-  upload.single("file"), // "file" must match FormData.append key in frontend
-  (req: Request, res: Response) => {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+  try {
+    if(!payload)
+    {
+      return res.json({
+        msg : "invalid data"
+      });
+
     }
-
-    console.log("📩 Zip uploaded:", req.file.originalname);
-
-    // inspect the contents
-    const zip = new AdmZip(req.file.path);
-    const entries = zip.getEntries();
-
-    console.log("📂 Files inside the zip:");
-    entries.forEach((entry) => {
-      console.log(`- ${entry.entryName} (${entry.header.size} bytes)`);
-    });
-
-    // optional: extract to disk
-    const extractPath = path.join(__dirname, "unzipped");
-    zip.extractAllTo(extractPath, true);
-
-    res.json({ message: "✅ Zip received and processed" });
+    const backendData = await axios.post("http://localhost:2025/api/v1/webhook_catcher/" , payload);
+    if(backendData)
+    {
+      return res.json({
+        msg : "sucessfull"
+      })
+    }
+  } catch (e) {
+    console.log(e , "Error caught");
   }
-);
+
+  return res.json({
+    message: "JSON received successfully",
+    count: Array.isArray(payload) ? payload.length : 1
+  });
+});
 
 app.listen(3333, () => {
-  console.log("🚀 Webhook server running on port 3333");
+  console.log("🚀 Webhook listening on port 3333");
 });
