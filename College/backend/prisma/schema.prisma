@@ -14,8 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model StudentAttendance {
-  id         Int    @id @unique
+model Student {
+  Enroll_no         String    @id @unique
   name       String
-  attendance Int
+  attendance String
+  marks String
+  roll_no String
+  subject String
 }

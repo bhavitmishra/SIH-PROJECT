@@ -27,8 +27,15 @@ app.post(
         return res.status(400).json({ error: "No file uploaded" });
       }
 
+      // 🔹 Get subject from formData (frontend sends this)
+      const { subject } = req.body as { subject?: string };
+
+      if (!subject) {
+        return res.status(400).json({ error: "Subject is required" });
+      }
+
       const filePath = req.file.path;
-      const ext = path.extname(req.file.originalname).toLowerCase(); // ✅ use original filename for extension
+      const ext = path.extname(req.file.originalname).toLowerCase(); // use original filename for extension
       let records: any[] = [];
 
       if (ext === ".csv") {
@@ -39,10 +46,12 @@ app.post(
           .slice(1) // skip header
           .filter((line) => line.trim() !== "")
           .map((line) => {
-            const [id, name, attendance] = line.split(",");
+            const [name, enroll_no, roll_no, marks, attendance] = line.split(",");
             return {
-              id: id?.replace(/"/g, "").trim(),
               name: name?.replace(/"/g, "").trim(),
+              enroll_no: enroll_no?.replace(/"/g, "").trim(),
+              roll_no: roll_no?.replace(/"/g, "").trim(),
+              marks: marks?.replace(/"/g, "").trim(),
               attendance: attendance?.replace(/"/g, "").trim(),
             };
           });
@@ -56,28 +65,40 @@ app.post(
         return res.status(400).json({ error: "Unsupported file format" });
       }
 
+      // 🔹 Attach subject to every student record
+      const recordsWithSubject = records.map((student) => ({
+        ...student,
+        subject, // same subject for all rows in this upload
+      }));
+
       // Save to DB
-      for (const student of records) {
+      for (const student of recordsWithSubject) {
         console.log("DEBUG:", student);
 
-        const studentId = parseInt(student["id"], 10);
-        const studentAttendance = parseInt(student["attendance"], 10);
+        const studentName = student["name"];
+        const studentEnroll = student["enroll_no"];
+        const studentRollNo = student["roll_no"];
+        const studentMarks = student["marks"];
+        const studentAttendance = student["attendance"];
+        const studentSubject = student["subject"];
 
-        if (isNaN(studentId) || isNaN(studentAttendance)) {
-          console.warn("⚠️ Skipping invalid row:", student);
-          continue;
-        }
-
-        await prisma.studentAttendance.upsert({
-          where: { id: studentId },
+        await prisma.student.upsert({
+          where: { Enroll_no: studentEnroll },
           update: {
-            name: student["name"],
+            name: studentName,
             attendance: studentAttendance,
+            roll_no: studentRollNo,
+            // 🔹 make sure `subject` exists in your Prisma schema
+            subject: studentSubject,
           },
+          // @ts-ignore
           create: {
-            id: studentId,
-            name: student["name"],
-            attendance: studentAttendance,
+            Enroll_no: studentEnroll || "",
+            name: studentName || "",
+            attendance: studentAttendance || 0,
+            marks: studentMarks,
+            roll_no: studentRollNo,
+            subject: studentSubject,
           },
         });
       }
@@ -85,16 +106,13 @@ app.post(
       // ✅ cleanup uploaded file to avoid filling /uploads
       fs.unlinkSync(filePath);
 
-      // ✅ Forward to webhook after DB save
+      // ✅ Forward to webhook after DB save, with subject included
       try {
-        const webhookRes = await fetch(
-          "http://localhost:3333/ietwebhook/attendance",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(records),
-          }
-        );
+        const webhookRes = await fetch("http://localhost:3333/dropzero_webhook/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(recordsWithSubject),
+        });
 
         if (webhookRes.ok) {
           console.log("✅ Webhook call successful!");
