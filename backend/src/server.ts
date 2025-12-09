@@ -4,11 +4,12 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import uploadrouter from "./routes/uploadData";
-
+import setuprouter from "./routes/instituteSetup"
 dotenv.config();
 const app = express();
 
 app.use("/api" , uploadrouter)
+app.use("/api/institute" , setuprouter);
 
 app.use(cors());
 app.use(express.json());
@@ -20,4 +21,4 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 const PORT = process.env.PORT || 2025;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(2025, () => console.log(`Server running on ${PORT}`));

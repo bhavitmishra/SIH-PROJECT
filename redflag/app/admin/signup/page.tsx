@@ -12,9 +12,13 @@ import { Label } from "@/components/ui/label";
 
 import { Mail, Key, User, School, Building2, Layers3 } from "lucide-react";
 
+
+
 export default function AdminSignUpPage() {
-  const [name, setName] = useState("");
   const [instituteName, setInstituteName] = useState("");
+    const [state, setState] = useState("");
+    const [city, setCity] = useState("");
+    const [pincode , setPincode] = useState("")
   const [type, setType] = useState("");
   const [levelName, setLevelName] = useState("");
   const [levelCount, setLevelCount] = useState<number | undefined>(undefined);
@@ -29,7 +33,7 @@ export default function AdminSignUpPage() {
     setError("");
     setIsLoading(true);
 
-    if (!name || !email || !password || !instituteName || !type || !levelName || !levelCount) {
+    if ( !email || !password || !instituteName || !type || !levelName || !levelCount) {
       setError("Please fill in all fields.");
       setIsLoading(false);
       return;
@@ -37,14 +41,11 @@ export default function AdminSignUpPage() {
 
     try {
       // 1️⃣ Register the admin and institute at backend API (we will build later)
-      await axios.post("/api/auth/register-admin", {
-        name,
-        email,
-        password,
-        instituteName,
-        type,
-        levelName,
-        levelCount,
+      await axios.post("http://localhost:2025/api/institute/setup", {
+
+       
+  
+        instituteName ,state , city , pincode , type , levelName , levelCount , email
       });
 
       // 2️⃣ Direct Sign In
@@ -78,11 +79,7 @@ export default function AdminSignUpPage() {
           {/* ---------- FORM START ---------- */}
           <form onSubmit={handleSubmit} className="grid gap-4">
 
-            {/* Full Name */}
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <Input placeholder="Full Name" className="pl-10" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
+            
 
             {/* Email */}
             <div className="relative">
@@ -95,6 +92,7 @@ export default function AdminSignUpPage() {
               <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <Input type="password" placeholder="Password" className="pl-10" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
+    
 
             <div className="h-[1px] bg-gray-300 my-2" />
 
@@ -102,6 +100,24 @@ export default function AdminSignUpPage() {
             <div className="relative">
               <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <Input placeholder="Institute Name" className="pl-10" value={instituteName} onChange={(e) => setInstituteName(e.target.value)} />
+            </div>
+
+            {/* State*/}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input type="state" placeholder="rajasthan" className="pl-10" value={state} onChange={(e) => setState(e.target.value)} />
+            </div>
+
+            {/* City*/}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input type="city" placeholder="Jaipur" className="pl-10" value={city} onChange={(e) => setCity(e.target.value)} />
+            </div>
+
+            {/* pincode*/}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input type="pincode" placeholder="474001" className="pl-10" value={pincode} onChange={(e) => setPincode(e.target.value)} />
             </div>
 
             {/* Institute Type */}
@@ -125,13 +141,13 @@ export default function AdminSignUpPage() {
               <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <select
                 className="w-full border rounded-md bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
+                value={levelName}
+                onChange={(e) => setLevelName(e.target.value)}
               >
                 <option value="">Select Level Name</option>
-                <option value="Class">School</option>
-                <option value="Semester">College</option>
-                <option value="Batch">Coaching</option>
+                <option value="Class">Class</option>
+                <option value="Semester">Semester</option>
+                <option value="Batch">Batch</option>
               </select>
             </div>
 

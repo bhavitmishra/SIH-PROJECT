@@ -85,7 +85,7 @@ model Student {
   classId String?
   class   Class?  @relation(fields: [classId], references: [id])
 
-  currentLevel Int? // e.g. 3/12, 5/8 etc.
+  currentLevel Int? 
 
   progress StudentProgress[]
 }
