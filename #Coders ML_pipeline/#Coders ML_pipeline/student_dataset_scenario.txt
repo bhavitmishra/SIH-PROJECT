@@ -1,0 +1,11 @@
+ok lets generate a dataset agian (this time in xl) 
+with some real life scenerios
+1) 2 of the students opt outfor another institute so they dropout in 1st year i.e(1st or 2nd sem)
+2) 1 of the student was very lazy (he droped out because he was failing too much so he dropedout)
+3) 1 of the student dropout due to financial uncertainities 
+4) 30-40 students were ok ok 
+5) 10-20 students were less acedemically interest (they were focused on placement or something) however they all eventually pass out
+6) 10-15 students were acedemically very brilliant (exels in almost every subjects)
+7) 10-15 students were not that much acedemically good (however they passout even after struggling so much)
+
+take your time and generate a good dataset please

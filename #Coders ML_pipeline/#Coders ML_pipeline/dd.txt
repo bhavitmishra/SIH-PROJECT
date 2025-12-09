@@ -1,0 +1,7 @@
+{
+    ...raw_performance,
+    slope,
+    pct_change,
+    momentum,
+    deviation
+}

@@ -1,0 +1,28 @@
+{
+    name : String,
+    enroll_no : ,
+    sem : [
+        {
+            sem_no : 
+            subjects : [
+                {
+                    subject_name :
+                    credit : 
+                    marks : {
+                        t1 : ,
+                        t2 : ,
+                        t3 : ,
+                        endsem : 
+                    }
+                    attendance :
+                    fee_due : int 
+                    no_of_attempts :
+                    subject_rf : <- by ml model
+                }
+            ,{},{}...]
+            sem_rf : <- backend logic
+        },
+    {},{}...]
+    current_rf : <- backend logic
+}
+
