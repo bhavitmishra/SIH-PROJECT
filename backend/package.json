@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --watch src --exec ts-node src/server.ts",
+    "dev": "npx prisma generate && nodemon --watch src --exec ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
@@ -13,7 +13,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^7.1.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -25,10 +24,12 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "multer": "^2.0.2",
-    "prisma": "^7.1.0",
+    "@prisma/client": "^6.15.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    
+      "prisma": "^6.15.0",
     "@types/multer": "^2.0.0",
     "nodemon": "^3.1.11",
     "ts-node": "^10.9.2",

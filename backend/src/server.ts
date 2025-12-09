@@ -3,11 +3,14 @@ import type { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import uploadrouter from "./routes/uploadData";
 
 dotenv.config();
 const app = express();
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use("/api" , uploadrouter)
+
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 

@@ -10,19 +10,16 @@ const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 const validate = ajv.compile(schema);
 
-export default async function validateFile(filePath: string) {
-  const ext = path.extname(filePath).toLowerCase();
+export default async function validateFile(filePath: string, originalName: string) {
+  const ext = path.extname(originalName).toLowerCase(); // ✅ use original filename
 
   let rows = [];
 
-  // 1) Parse depending on file type
   if (ext === ".csv") {
     rows = await parseCSV(filePath);
-  } 
-  else if (ext === ".xlsx") {
+  } else if (ext === ".xlsx") {
     rows = parseXLSX(filePath);
-  } 
-  else {
+  } else {
     throw new Error("Unsupported file format. Only CSV or XLSX allowed.");
   }
 

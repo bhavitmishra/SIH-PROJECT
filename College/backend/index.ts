@@ -108,7 +108,7 @@ app.post(
 
       // ✅ Forward to webhook after DB save, with subject included
       try {
-        const webhookRes = await fetch("http://localhost:3333/dropzero_webhook/", {
+        const webhookRes = await fetch("http://localhost:3333/dropzero_webhook", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(recordsWithSubject),

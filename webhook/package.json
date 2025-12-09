@@ -10,10 +10,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/json2csv": "^5.0.7",
     "adm-zip": "^0.5.16",
     "axios": "^1.13.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "form-data": "^4.0.5",
+    "json2csv": "^6.0.0-alpha.2",
     "multer": "^2.0.2"
   },
   "devDependencies": {

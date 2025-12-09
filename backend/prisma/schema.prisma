@@ -1,14 +1,122 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model InstituteName {
+  id        String         @id @default(uuid())
+  name      String
+  state     String
+  city      String
+  pincode   String
+  type      InstituteType
+  levelType InstituteLevel // SEMESTER / CLASS / BATCH
+  levels    Int // total levels (e.g. 8 or 12)
+
+  admins   Admin[]
+  students Student[]
+  classes  Class[]
+  mentors  Mentor[] // 🔹 back relation for Mentor.institute
+}
+
+model Admin {
+  id          String        @id @default(ulid())
+  email       String        @unique
+  instituteId String
+  institute   InstituteName @relation(fields: [instituteId], references: [id])
+
+  mentors Mentor[] // 🔹 back relation for Mentor.admin
+}
+
+model Class {
+  id          String        @id @default(ulid())
+  name        String
+  level       Int // e.g. Class 9, Semester 3 etc.
+  instituteId String
+  institute   InstituteName @relation(fields: [instituteId], references: [id])
+
+  mentorId String?
+  mentor   Mentor? @relation(fields: [mentorId], references: [id])
+
+  students Student[]
+  subjects Subject[]
+}
+
+model Subject {
+  id     String  @id @default(ulid())
+  name   String
+  code   String? @unique
+  credit Int?
+
+  classId String
+  class   Class  @relation(fields: [classId], references: [id])
+
+  progress StudentProgress[]
+}
+
+model Mentor {
+  id    String @id @default(ulid())
+  email String @unique
+
+  instituteId String
+  institute   InstituteName @relation(fields: [instituteId], references: [id])
+
+  adminId String
+  admin   Admin  @relation(fields: [adminId], references: [id]) // 🔹 completes Admin.mentors
+
+  classes Class[]
+}
+
+model Student {
+  id          String  @id @default(ulid())
+  enroll_no   String
+  name        String
+  email       String?
+  parentEmail String?
+  parentPhone String?
+
+  instituteId String
+  institute   InstituteName @relation(fields: [instituteId], references: [id])
+
+  classId String?
+  class   Class?  @relation(fields: [classId], references: [id])
+
+  currentLevel Int? // e.g. 3/12, 5/8 etc.
+
+  progress StudentProgress[]
+}
+
+model StudentProgress {
+  id String @id @default(ulid())
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  subjectId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+
+  level      Int // which level/semester/class
+  marks      Int?
+  attendance Int?
+  payment    Boolean?
+  // could add: term, year, remarks, riskScoreSnapshot, etc.
+
+  @@unique([studentId, subjectId, level])
+}
+
+enum InstituteType {
+  COLLEGE
+  SCHOOL
+  COACHING
+  POLYTECHNIC
+}
+
+enum InstituteLevel {
+  SEMESTER
+  CLASS
+  BATCH
 }

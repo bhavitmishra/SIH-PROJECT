@@ -115,7 +115,6 @@ export default function AdminDashboard() {
             { id: "mentors", label: "Mentor Management", icon: Users },
             { id: "systemAlerts", label: "System Alerts", icon: Bell },
             { id: "announcement", label: "Alert Dispatcher", icon: Megaphone },
-            { id: "settings", label: "System Settings", icon: Settings }
           ].map(item => {
             
             const Icon = item.icon;

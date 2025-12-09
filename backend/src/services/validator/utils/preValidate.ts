@@ -4,7 +4,7 @@ export const preValidateRow = (row: StudentRow) => {
     const errors: string[] = [];
 
     // Validate roll
-    if (!row.roll || row.roll.trim() === "") {
+    if (!row.roll_no || row.roll_no.trim() === "") {
         errors.push("Invalid roll number");
     }
 
@@ -40,17 +40,17 @@ export const preValidateRow = (row: StudentRow) => {
     }
 
     // Validate feesPaid
-    if(row.feesPaid === null || row.feesPaid === "" || row.feesPaid === undefined) {
-        row.feesPaid = 0;
-    }
-    else {
-        const feesPaidNum = Number(row.feesPaid);
-        if (isNaN(feesPaidNum) || feesPaidNum < 0) {
-            errors.push("Invalid fees paid");
-        } else {
-            row.feesPaid = feesPaidNum;
-        }
-    }
+    // if(row.feesPaid === null || row.feesPaid === "" || row.feesPaid === undefined) {
+    //     row.feesPaid = 0;
+    // }
+    // else {
+    //     const feesPaidNum = Number(row.feesPaid);
+    //     if (isNaN(feesPaidNum) || feesPaidNum < 0) {
+    //         errors.push("Invalid fees paid");
+    //     } else {
+    //         row.feesPaid = feesPaidNum;
+    //     }
+    // }
 
     return { row, errors };
 }

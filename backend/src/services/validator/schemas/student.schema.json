@@ -2,12 +2,13 @@
   "$id": "StudentRecord",
   "type": "object",
   "properties": {
-    "roll": { "type": "string", "pattern": "^[0-9]+$" },
+    "roll_no": { "type": "string", "pattern": "^[A-Za-z0-9]+$" },
     "name": { "type": "string", "minLength": 1 },
     "attendance": { "type": "number", "minimum": 0, "maximum": 100 },
     "marks": { "type": "number", "minimum": 0, "maximum": 100 },
-    "feesPaid": { "type": "number", "minimum": 0 }
+    "feesPaid": { "type": "number", "minimum": 0 },
+    "enroll_no": { "type": "string" },
+    "subject": { "type": "string", "minLength": 1 }   
   },
-  "required": ["roll", "name", "attendance", "marks", "feesPaid"],
   "additionalProperties": false
 }

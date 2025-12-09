@@ -133,7 +133,7 @@ app.post("/upload/attendance", upload.single("file"), (req, res) => __awaiter(vo
         fs_1.default.unlinkSync(filePath);
         // ✅ Forward to webhook after DB save, with subject included
         try {
-            const webhookRes = yield fetch("http://localhost:3333/dropzero_webhook/", {
+            const webhookRes = yield fetch("http://localhost:3333/dropzero_webhook", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(recordsWithSubject),
