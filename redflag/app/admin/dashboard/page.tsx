@@ -3,74 +3,58 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { Users, Settings, Upload, BarChart3, Bell, Shield, Activity, TrendingUp, Mail, AlertCircle, UserPlus, Calendar, Filter, Send, Megaphone } from 'lucide-react';
 import { useRouter } from "next/navigation";
-import AnimationWrapper from "@/components/ui/pageTransition"
+
+import {
+  Users, Settings, Bell, Shield, Activity, Mail,
+  UserPlus, Megaphone, BarChart3, Building2
+} from "lucide-react";
+
+import AnimationWrapper from "@/components/ui/pageTransition";
+
+/* ---------------- MAIN ADMIN DASHBOARD ---------------- */
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
+  const router = useRouter();
+
+  // Temporary institute read
+  const institute = {
+    name: "Sunrise Public School",
+    type: "School",
+    levelName: "Class",
+    levelCount: 12,
+  };
+
   const [activeTab, setActiveTab] = useState("overview");
   const [email, setEmail] = useState("");
+  const [mentor, setMentor] = useState([
+    { id: 1, email: "mentor1@gmail.com" },
+    { id: 2, email: "mentor2@gmail.com" }
+  ]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [showMessage, setShowMessage] = useState(false);
 
-  const router = useRouter();
-
-  // -------------- Temporary for ui ---------------//
-
-    const [mentor, setMentor] = useState([
-      {
-        id: 1,
-        email: "mentor1@gmail.com"
-      },
-      {
-        id: 2,
-        email: "mentor2@gmail.com"
-      }
-    ]);
-
-      // to auto hide message after 2.5 seconds with fade out effect
+  /* ---------------- AUTO HIDE SUCCESS/FAIL MESSAGE ---------------- */
   useEffect(() => {
+    let t1: NodeJS.Timeout;
+    let t2: NodeJS.Timeout;
 
-    let visibilityTimer: NodeJS.Timeout;
-    let messageTimer: NodeJS.Timeout;
-
-    if(message){
-      visibilityTimer = setTimeout(() => {
-        setShowMessage(false);
-      }, 2000)
-
-      messageTimer = setTimeout(() => {
-        setMessage("");
-      },2500)
+    if (message) {
+      t1 = setTimeout(() => setShowMessage(false), 1800);
+      t2 = setTimeout(() => setMessage(""), 2400);
     }
-
-    return () => {
-      clearTimeout(visibilityTimer);
-      clearTimeout(messageTimer);
-    }
-
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [message]);
 
-  // Handle add mentor request
+  /* ---------------- ADD MENTOR HANDLER ---------------- */
   const handleAddMentor = async () => {
-    if (!email){
-      alert('Please enter email address');
-      return;
-    }
+    if (!email) return alert("Enter mentor email");
 
-    // -------------- Temporary for ui ---------------//
-    const newMentor = {
-      id: Date.now(), // temporary id
-      email
-    }
-
-    setMentor((currentMentor) => [...currentMentor, newMentor]);
-
+    setMentor(prev => [...prev, { id: Date.now(), email }]);
     setIsLoading(true);
-    setMessage("");
-    setShowMessage(false);
+
     try {
       await axios.post("/api/mailsender/", {
         email,
@@ -79,343 +63,207 @@ export default function AdminDashboard() {
       });
       setMessage("Mentor added successfully!");
       setShowMessage(true);
-      setEmail(""); // clear input
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to add mentor. Please try again.");
+      setEmail("");
+    } catch {
+      setMessage("Failed to add mentor.");
       setShowMessage(true);
     } finally {
       setIsLoading(false);
-      setEmail(""); // clear input
     }
   };
+  const handleFormSubmit = (e: React.FormEvent) => { e.preventDefault(); handleAddMentor(); };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleAddMentor();
-  }
+  /* ========================= UI START ========================= */
 
-    return (
+  return (
+    <div className="flex h-screen bg-gray-50 text-gray-800">
 
-      <div className="flex h-screen bg-gray-100">
-
-      {/* Sidebar */}
-
-      <aside className="w-64 bg-white shadow-lg flex flex-col">
-        <div className="text-2xl font-bold text-red-500 p-6 border-b border-gray-200">
-          <div className="flex items-center gap-2">
+      {/* ==================== SIDEBAR ==================== */}
+      <aside className="w-64 bg-white shadow-lg flex flex-col border-r">
+        {/* Logo */}
+        <div className="p-6 border-b">
+          <div className="flex items-center gap-2 text-indigo-600 text-xl font-bold">
             <Shield className="w-6 h-6" />
             Admin Panel
           </div>
         </div>
 
-        <nav className="flex-1 py-4">
+        {/* Institute Info */}
+        <div className="px-6 py-4 border-b text-sm">
+          <div className="flex items-center gap-2 text-gray-700">
+            <Building2 className="w-4 h-4 text-indigo-500" />
+            <span className="font-semibold">{institute.name}</span>
+          </div>
+          <p className="text-xs text-gray-500 ml-6">
+            {institute.type} · {institute.levelName} System ({institute.levelCount} Levels)
+          </p>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-2 py-4 text-sm">
           {[
             { id: "overview", label: "Dashboard Overview", icon: BarChart3 },
             { id: "mentors", label: "Mentor Management", icon: Users },
             { id: "systemAlerts", label: "System Alerts", icon: Bell },
             { id: "announcement", label: "Alert Dispatcher", icon: Megaphone },
+            { id: "settings", label: "System Settings", icon: Settings }
           ].map(item => {
-            
             const Icon = item.icon;
             return (
               <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full text-left px-6 py-3 hover:bg-red-50 flex items-center gap-3 transition-colors ${
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex items-center w-full gap-3 px-4 py-3 rounded-md mb-1 transition ${
                   activeTab === item.id
-                    ? "bg-red-100 font-semibold text-red-600 border-r-3 border-red-600"
-                    : "text-gray-700"
+                    ? "bg-indigo-100 text-indigo-700 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
-
                 <Icon className="w-4 h-4" />
                 {item.label}
               </button>
-            )
+            );
           })}
         </nav>
       </aside>
-        
-      {/* Main Content */}
+
+      {/* ==================== MAIN CONTENT ==================== */}
       <main className="flex-1 overflow-y-auto p-6">
+        <AnimationWrapper key={activeTab}>
 
-          <AnimationWrapper key={activeTab}>
-        {/* system overview */}
+          {/* ------------ OVERVIEW ------------ */}
+          {activeTab === "overview" && (
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Overview</h1>
+              <p className="text-gray-600 mb-6">Monitor overall system health & mentor performance</p>
 
-        <div className={activeTab === "overview" ? 'block' : 'hidden'}>
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard Overview</h1>
-            <p className="text-gray-600 mt-2">Monitor overall system health and mentor performance</p>
-          </div>
-        
-
-        <div className="grid grid-cols-1 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm">Total Mentors</p>
-                  <p className="text-2xl font-bold text-gray-900">23</p>
-                  <p className="text-sm text-green-600"> active</p>
-                </div>
-                <Users className="w-8 h-8 text-blue-500" />
+              <div className="grid md:grid-cols-3 xl:grid-cols-4 gap-6">
+                <StatCard title="Total Mentors" value="23" icon={<Users className="w-8 h-8 text-indigo-500" />} />
+                <StatCard title="Total Students" value="322" icon={<Activity className="w-8 h-8 text-green-500" />} />
+                <StatCard title="System Alerts" value="23" icon={<Bell className="w-8 h-8 text-yellow-500" />} />
+                <StatCard title="System Status" value="Healthy" icon={<Shield className="w-8 h-8 text-green-600" />} />
               </div>
             </div>
-            
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm">Total Students</p>
-                  <p className="text-2xl font-bold text-gray-900">322</p>
-                  <p className="text-sm text-gray-500">Across all mentors</p>
-                </div>
-                <Activity className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
+          )}
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm">System Alerts</p>
-                  <p className="text-2xl font-bold text-yellow-600">23</p>
-                  <p className="text-sm text-gray-500">This month</p>
-                </div>
-                <Bell className="w-8 h-8 text-yellow-500" />
-              </div>
-            </div>
+          {/* ------------ MENTORS ------------ */}
+          {activeTab === "mentors" && (
+            <div className="space-y-10">
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm">System Health</p>
-                  <p className="text-2xl font-bold text-green-600">Operational</p>
-                  <p className="text-sm text-gray-500">Updated 2 hours ago</p>
-                </div>
-                <Shield className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
-          </div>
-          </div>
+              {/* FORM */}
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Mentor Management</h2>
+                <p className="text-gray-600 mb-6">Invite and manage mentors</p>
 
-          {/* Mentor Management */}
-          <div className={`space-y-10 ${activeTab==='mentors' ? 'block' : 'hidden'}`}> {/* Added a wrapper for consistent spacing */}
-
-  {/* Add Mentor Form */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">Mentor Management</h2>
-              <p className="text-gray-600 mb-6">Manage mentors and monitor their performance</p>
-              
-              <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm w-full max-w-md">
-                <form onSubmit={handleFormSubmit} className="space-y-4">
-                  <div>
-                    <label htmlFor="mentorEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                      Mentor's Email Address
+                <div className="p-6 bg-white border rounded-xl shadow-sm w-full max-w-md">
+                  <form onSubmit={handleFormSubmit} className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Mentor&apos;s Email
                     </label>
+
                     <div className="relative">
-                      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                        <Mail className="w-5 h-5 text-gray-400" />
-                      </div>
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
-                        id="mentorEmail"
-                        name="mentorEmail"
                         type="email"
+                        placeholder="mentor@institute.edu"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="mentor@school.edu.in"
-                        className="block w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2.5"
+                        className="block w-full rounded-md border-gray-300 pl-10 shadow-sm py-2.5"
                       />
                     </div>
-                  </div>
-                  <button
-                    disabled={isLoading}
-                    type="submit"
-                    className="flex w-full justify-center items-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>{isLoading ? "Adding Mentor..." : "Add Mentor"}</span>
-                  </button>
-                </form>
-              </div>
-              {message && (
-                <p className={`mt-4 text-sm ${message.includes('Failed') ? 'text-red-600' : 'text-green-600'} transition-opacity duration-500 ease-out ${showMessage ? "opacity-100" : 'opacity-0'}`}>{message}</p>
-              )}
-            </div>
 
-            {/* Mentor List Section */}
-            <div>
-              <h2 className="text-xl font-bold text-gray-800">Mentors List</h2>
-              <p className="mt-1 text-sm text-gray-500">A complete list of all registered mentors.</p>
-              
-              {/* New container forces rounded corners on the table */}
-              <div className="mt-4 w-full overflow-x-auto rounded-lg border border-gray-200">
-                {mentor.length === 0 ? (
-                  <p className="p-6 text-center text-gray-500">No mentors have been added yet.</p>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200 text-sm">
+                    <button
+                      disabled={isLoading}
+                      className="flex w-full justify-center items-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      {isLoading ? "Adding Mentor..." : "Add Mentor"}
+                    </button>
+                  </form>
+                </div>
+
+                {message && (
+                  <p className={`mt-3 text-sm ${message.includes("Failed") ? "text-red-600" : "text-green-600"} transition-opacity duration-500 ${showMessage ? "opacity-100" : "opacity-0"}`}>
+                    {message}
+                  </p>
+                )}
+              </div>
+
+              {/* TABLE */}
+              <div>
+                <h2 className="text-xl font-bold text-gray-800">Mentors List</h2>
+                <p className="text-sm text-gray-500 mb-4">All registered mentors</p>
+
+                <div className="w-full overflow-x-auto rounded-lg border bg-white">
+                  <table className="min-w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th scope="col" className="whitespace-nowrap px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
-                          ID
-                        </th>
-                        <th scope="col" className="whitespace-nowrap px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th scope="col" className="whitespace-nowrap px-6 py-3 text-left font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
+                        <th className="px-6 py-3 font-medium text-gray-500">ID</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">Email</th>
+                        <th className="px-6 py-3 font-medium text-gray-500">Actions</th>
                       </tr>
                     </thead>
-                    
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                      {mentor.map((m) => (
+                    <tbody className="divide-y">
+                      {mentor.map(m => (
                         <tr key={m.id} className="hover:bg-gray-50">
-                          <td className="whitespace-nowrap px-6 py-4 font-medium text-gray-500">{m.id}</td>
-                          <td className="whitespace-nowrap px-6 py-4 font-semibold text-gray-800">{m.email}</td>
-                          <td className="whitespace-nowrap px-6 py-4">
-                            <button className="font-medium text-red-600 hover:text-red-800">
-                              Delete
-                            </button>
+                          <td className="px-6 py-3 text-gray-600">{m.id}</td>
+                          <td className="px-6 py-3 font-semibold">{m.email}</td>
+                          <td className="px-6 py-3">
+                            <button className="text-red-600 hover:text-red-800 text-sm font-medium">Delete</button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
-                )}
+                </div>
+
               </div>
             </div>
-        </div>
-                {/* System Alerts & Insights */}
+          )}
 
-        <div className={activeTab === "systemAlerts" ? "block" : "hidden"}>
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold">System Alerts</h2>
-            <p className="text-gray-600">Monitor system-wide alerts and mentor responsiveness</p>
-          </div>
+          {/* ------------ ALERTS ------------ */}
+          {activeTab === "systemAlerts" && <AlertsUI />}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500" />
-                Unactioned Alerts
-              </h3>
-              <div className="space-y-3">
-                <div className="p-3 bg-red-50 rounded-lg border-l-4 border-red-500">
-                  <p className="font-medium text-red-800">Dr. Anjali Mehta</p>
-                  <p className="text-sm text-red-600">4 high-risk student alerts pending for 2+ days</p>
-                  <button className="text-xs text-blue-600 hover:underline mt-1">Send Escalation</button>
-                </div>
-                <div className="p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
-                  <p className="font-medium text-yellow-800">Prof. Raj Kumar</p>
-                  <p className="text-sm text-yellow-600">1 moderate-risk alert pending</p>
-                  <button className="text-xs text-blue-600 hover:underline mt-1">Send Reminder</button>
-                </div>
-              </div>
+          {/* ------------ COMMUNICATION ------------ */}
+          {activeTab === "announcement" && <AnnouncementUI />}
+
+          {/* ------------ SETTINGS ------------ */}
+          {activeTab === "settings" && (
+            <div>
+              <h2 className="text-2xl font-bold">Settings</h2>
+              <p className="text-gray-600">Institute configuration & system preferences coming soon.</p>
             </div>
+          )}
 
-            <div className="bg-white p-6 rounded-xl shadow-sm border">
-              <h3 className="text-lg font-semibold mb-4">Alert Configuration</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Alert Escalation Time</label>
-                  <select defaultValue="48 hours" className="w-full px-3 py-2 border rounded-lg">
-                    <option>24 hours</option>
-                    <option>48 hours</option>
-                    <option>72 hours</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notification</label>
-                  <select defaultValue="Real-time" className="w-full px-3 py-2 border rounded-lg">
-                    <option>Daily Summary</option>
-                    <option>Real-time</option>
-                    <option>Weekly Summary</option>
-                  </select>
-                </div>
-                <button className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600">
-                  Update Settings
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Announcements Section */}
-        <div className={activeTab === 'announcement' ? 'block' : 'hidden'}>
-  <div className="mb-6">
-    <h2 className="text-2xl font-bold text-gray-900">Dispatch Center</h2>
-    <p className="text-gray-600">Create targeted, personalized, and scheduled communications.</p>
-  </div>
-
-  <div className="bg-white p-6 rounded-xl shadow-sm border max-w-3xl">
-    <form className="space-y-6">
-
-      {/* --- 1. The Targeting System --- */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-800 mb-2">
-          1. Who gets this message?
-        </label>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {/* Option 1 */}
-          <button type="button" className="flex flex-col items-center justify-center p-3 border-2 border-indigo-600 rounded-lg bg-indigo-50 text-indigo-700">
-            <Users className="w-6 h-6 mb-1" />
-            <span className="text-sm font-semibold">All Mentors</span>
-          </button>
-          {/* Option 2 */}
-          <button type="button" className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50">
-            <Users className="w-6 h-6 mb-1" />
-            <span className="text-sm font-semibold">All Students</span>
-          </button>
-          {/* Option 3 - THE WOW FEATURE */}
-          <button type="button" className="flex flex-col items-center justify-center p-3 border border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50">
-            <Filter className="w-6 h-6 mb-1" />
-            <span className="text-sm font-semibold">Smart Filter</span>
-          </button>
-        </div>
-      </div>
-
-      {/* --- 2. The Message Composer --- */}
-      <div>
-        <label htmlFor="announcementTitle" className="block text-sm font-semibold text-gray-800 mb-2">
-          2. What's the message?
-        </label>
-        <input
-          id="announcementTitle"
-          type="text"
-          placeholder="e.g., Upcoming Deadline for Reports"
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
-        />
-        <textarea
-          id="announcementContent"
-          rows={5}
-          placeholder="Write your announcement here..."
-          className="mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm py-2 px-3"
-        ></textarea>
-        {/* Dynamic Tags */}
-        <div className="mt-2 text-xs text-gray-500">
-          Add personal touch:
-          <button type="button" className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">{`{name}`}</button>
-          <button type="button" className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">{`{role}`}</button>
-        </div>
-      </div>
-      
-      {/* --- 3. The Action Buttons --- */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t">
-        <button type="button" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
-          <Calendar className="w-4 h-4" />
-          Schedule
-        </button>
-        <button type="submit" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
-          <Send className="w-4 h-4" />
-          Send Now
-        </button>
-      </div>
-
-    </form>
-  </div>
-</div>
-                </AnimationWrapper>
+        </AnimationWrapper>
       </main>
-
-      </div>
-    )
+    </div>
+  );
 }
+
+/* ========= SMALL STAT CARD ========= */
+const StatCard = ({ title, value, icon }: any) => (
+  <div className="bg-white p-6 rounded-xl shadow-sm border flex items-center justify-between">
+    <div>
+      <p className="text-gray-500 text-sm">{title}</p>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+    </div>
+    {icon}
+  </div>
+);
+
+/* ========= PLACEHOLDER ALERT UI ========= */
+const AlertsUI = () => (
+  <div>
+    <h2 className="text-2xl font-bold mb-2">System Alerts</h2>
+    <p className="text-gray-600">Monitor alerts from mentors</p>
+  </div>
+);
+
+/* ========= PLACEHOLDER COMMUNICATION UI ========= */
+const AnnouncementUI = () => (
+  <div>
+    <h2 className="text-2xl font-bold mb-2">Communicate</h2>
+    <p className="text-gray-600">Send announcements & messages</p>
+  </div>
+);
