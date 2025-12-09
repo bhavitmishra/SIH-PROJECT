@@ -3,63 +3,51 @@
 import { useState, FormEvent } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Mail, Key, User } from "lucide-react";
+import axios from "axios";
 
-// Using a standard SVG for the Google icon is the best practice
-const GoogleIcon = () => (
-  <svg className="w-4 h-4 mr-2" viewBox="0 0 48 48">
-    <path
-      fill="#FFC107"
-      d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
-    ></path>
-    <path
-      fill="#FF3D00"
-      d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"
-    ></path>
-    <path
-      fill="#4CAF50"
-      d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"
-    ></path>
-    <path
-      fill="#1976D2"
-      d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.012 36.49 44 30.638 44 24c0-1.341-.138-2.65-.389-3.917z"
-    ></path>
-  </svg>
-);
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import { Mail, Key, User, School, Building2, Layers3 } from "lucide-react";
 
 export default function AdminSignUpPage() {
   const [name, setName] = useState("");
+  const [instituteName, setInstituteName] = useState("");
+  const [type, setType] = useState("");
+  const [levelName, setLevelName] = useState("");
+  const [levelCount, setLevelCount] = useState<number | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // This function will handle calling your new signup API endpoint
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
     setIsLoading(true);
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !instituteName || !type || !levelName || !levelCount) {
       setError("Please fill in all fields.");
       setIsLoading(false);
       return;
     }
 
     try {
-      // This is where you would call your own API to create a new user
-      // For example: await axios.post('/api/auth/register', { name, email, password });
+      // 1️⃣ Register the admin and institute at backend API (we will build later)
+      await axios.post("/api/auth/register-admin", {
+        name,
+        email,
+        password,
+        instituteName,
+        type,
+        levelName,
+        levelCount,
+      });
 
-      // After successful signup, sign them in directly
+      // 2️⃣ Direct Sign In
       const result = await signIn("credentials", {
         email,
         password,
@@ -67,109 +55,102 @@ export default function AdminSignUpPage() {
         callbackUrl: "/admin/dashboard",
       });
 
-      if (result?.error) {
-        setError("Could not sign in after registration.");
-      } else if (result?.url) {
-        window.location.href = result.url;
-      }
-    } catch (apiError) {
-      // If your API returns an error (e.g., email already exists)
-      setError("Failed to create account. The email may already be in use.");
+      if (result?.error) setError("Signup succeeded, but login failed.");
+      else if (result?.url) window.location.href = result.url;
+
+    } catch (err: any) {
+      setError("Failed to create account. Email may already exist.");
     }
 
     setIsLoading(false);
   };
 
   return (
-    <main className="flex justify-center items-center min-h-screen bg-gray-50">
-      <Card className="w-full max-w-sm">
+    <main className="flex justify-center items-center min-h-screen bg-gray-50 px-4">
+      <Card className="w-full max-w-lg shadow-lg border border-gray-200">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            Create an Admin Account
-          </CardTitle>
-          <CardDescription>
-            Enter your details below to get started.
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">Create Admin Account</CardTitle>
+          <CardDescription>Enter your details to get started</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
+
+        <CardContent className="grid gap-6">
+
+          {/* ---------- FORM START ---------- */}
           <form onSubmit={handleSubmit} className="grid gap-4">
-            {/* Each input is now wrapped in a 'relative' div */}
+
+            {/* Full Name */}
             <div className="relative">
-              <User
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <Input
-                id="fullname"
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="pl-10"
-              />
-            </div>
-            <div className="relative">
-              <Mail
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="pl-10"
-              />
-            </div>
-            <div className="relative">
-              <Key
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-              <Input
-                id="password"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="pl-10"
-              />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input placeholder="Full Name" className="pl-10" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
-            {error && (
-              <p className="text-sm text-red-600 text-center">{error}</p>
-            )}
+            {/* Email */}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input type="email" placeholder="admin@example.com" className="pl-10" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input type="password" placeholder="Password" className="pl-10" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+
+            <div className="h-[1px] bg-gray-300 my-2" />
+
+            {/* Institute Name */}
+            <div className="relative">
+              <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Input placeholder="Institute Name" className="pl-10" value={instituteName} onChange={(e) => setInstituteName(e.target.value)} />
+            </div>
+
+            {/* Institute Type */}
+            <div className="relative">
+              <School className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <select
+                className="w-full border rounded-md bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <option value="">Select Institute Type</option>
+                <option value="School">School</option>
+                <option value="College">College</option>
+                <option value="Coaching">Coaching</option>
+                <option value="Polytechnic">Polytechnic</option>
+              </select>
+            </div>
+
+            {/* Level Name */}
+            <div className="relative">
+              <Layers3 className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <select
+                className="w-full border rounded-md bg-white py-2.5 pl-10 pr-3 text-sm shadow-sm focus:ring-2 focus:ring-indigo-500"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <option value="">Select Level Name</option>
+                <option value="Class">School</option>
+                <option value="Semester">College</option>
+                <option value="Batch">Coaching</option>
+              </select>
+            </div>
+
+            {/* Level Count */}
+            <div>
+              <Input type="number" placeholder="Total Levels (e.g. 12, 8)" 
+                value={levelCount || ""} onChange={(e) => setLevelCount(Number(e.target.value))} />
+            </div>
+
+            {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating Account..." : "Create Account"}
             </Button>
+
           </form>
+          {/* ---------- FORM END ---------- */}
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">Or</span>
-            </div>
-          </div>
-
-          <Button
-            variant="outline"
-            className="rounded-2xl"
-            onClick={() =>
-              signIn("google", { callbackUrl: "/admin/dashboard" })
-            }
-          >
-            <GoogleIcon />
-            Continue with Google
-          </Button>
-
-          <div className="mt-4 text-center text-sm">
+          <div className="text-center text-sm">
             Already have an account?{" "}
             <Link href="/admin/signin" className="underline">
               Sign In
