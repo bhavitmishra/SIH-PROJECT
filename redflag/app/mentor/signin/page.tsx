@@ -31,7 +31,7 @@ export default function MentorSignInPage() {
             email,
             password,
             redirect: false,
-            callbackUrl: "/mentor/dashboard",
+            callbackUrl: "/mentor/subject",
         });
 
         if (result?.error) {
